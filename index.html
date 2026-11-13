@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surabaya MUN 2026 — IMF Command Suite</title>
+  <style>
+    :root {
+      --navy: #00426a;
+      --navy-dark: #003150;
+      --bg: #f4f6f9;
+      --white: #ffffff;
+      --border: #dfe4ea;
+      --text: #1e272e;
+      --muted: #747d8c;
+      --green: #2ecc71;
+      --green-dark: #27ae60;
+      --red: #eb4d4b;
+      --red-dark: #c0392b;
+      --amber: #f9ca24;
+      --amber-dark: #f0932b;
+      --grey-btn: #8395a7;
+      --blue-tint: #eef7fc;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 74px;
+    }
+
+    /* Top MUN Command Header */
+    .topbar {
+      background: var(--navy);
+      color: #fff;
+      height: 52px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 1rem; }
+    .emblem {
+      width: 28px; height: 28px; border-radius: 50%; background: #fff; color: var(--navy);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.78rem;
+    }
+    .subbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+    .status-pills { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text); }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot.navy { background: var(--navy); }
+    .dot.green { background: var(--green); }
+    .dot.amber { background: var(--amber); }
+    .dot.red { background: var(--red); }
+
+    /* Main Container */
+    .container { max-width: 1380px; margin: 18px auto; padding: 0 18px; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+
+    /* MUN Command Split Voting Layout */
+    .vote-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    @media (max-width: 960px) { .vote-grid { grid-template-columns: 1fr; } }
+
+    .dash-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px; }
+    .btn-pill {
+      border: none; border-radius: 6px; padding: 10px 12px; font-weight: 600;
+      cursor: pointer; font-size: 0.85rem; transition: opacity 0.15s;
+    }
+    .btn-pill:hover { opacity: 0.9; }
+    .btn-orange { background: var(--amber-dark); color: #fff; }
+    .btn-navy { background: var(--navy); color: #fff; }
+    .btn-light { background: #eef1f5; color: var(--text); border: 1px solid var(--border); }
+
+    .tally-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; margin-bottom: 12px;
+    }
+    .tally-num { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+    .tally-lbl { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+    .progress-bar {
+      height: 16px; background: #eef1f5; border-radius: 8px; overflow: hidden;
+      display: flex; margin-bottom: 14px; border: 1px solid var(--border);
+    }
+    .seg-yes { background: var(--green); transition: width 0.25s; }
+    .seg-abs { background: var(--amber); transition: width 0.25s; }
+    .seg-no  { background: var(--red); transition: width 0.25s; }
+
+    .result-box {
+      padding: 10px 12px; border-radius: 6px; font-size: 0.84rem; font-weight: 600;
+      margin-bottom: 16px; border: 1px solid var(--border); background: #f8fafc;
+    }
+    .result-box.pass { background: #eafaf1; border-color: var(--green); color: #1e8449; }
+    .result-box.fail { background: #fdedec; border-color: var(--red); color: #922b21; }
+
+    .nav-list { border-top: 1px solid var(--border); }
+    .nav-item {
+      padding: 11px 8px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; font-size: 0.88rem; color: var(--text);
+    }
+    .nav-item:hover, .nav-item.active { background: var(--blue-tint); font-weight: 600; color: var(--navy); }
+
+    /* Active Spotlight Box (Right Column Top) */
+    .spotlight {
+      display: grid; grid-template-columns: 200px 1fr 1fr; gap: 14px; align-items: center;
+      padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 12px;
+    }
+    @media (max-width: 720px) { .spotlight { grid-template-columns: 1fr; } }
+
+    .seat-badge-box { text-align: center; }
+    .seat-circle {
+      width: 76px; height: 76px; border-radius: 50%; background: var(--navy); color: #fff;
+      margin: 0 auto 8px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-weight: 800; box-shadow: 0 3px 8px rgba(0,66,106,0.2);
+    }
+    .seat-circle span { font-size: 0.7rem; font-weight: 500; opacity: 0.85; }
+    .seat-name { font-weight: 700; font-size: 0.92rem; }
+    .seat-meta { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .action-col { display: flex; flex-direction: column; gap: 8px; }
+    .vote-big {
+      border: none; border-radius: 6px; padding: 12px; font-weight: 700; font-size: 0.9rem;
+      cursor: pointer; color: #fff; text-align: center; transition: transform 0.05s, opacity 0.15s;
+    }
+    .vote-big:active { transform: scale(0.99); }
+    .vote-big:disabled { opacity: 0.35; cursor: not-allowed; }
+    .vb-yes { background: var(--green); }
+    .vb-no { background: var(--red); }
+    .vb-abs { background: var(--amber); color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.18); }
+    .vb-pass { background: var(--grey-btn); }
+
+    /* Roll Call Rows */
+    .rc-list { max-height: 440px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+    .rc-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer;
+      transition: background 0.12s;
+    }
+    .rc-row:last-child { border-bottom: none; }
+    .rc-row:hover { background: #f8fafc; }
+    .rc-row.selected { background: var(--blue-tint); border-left: 4px solid var(--navy); }
+    .rc-row.barred { background: #fff5f5; opacity: 0.65; cursor: not-allowed; }
+    .rc-left { display: flex; align-items: center; gap: 12px; }
+    .mini-avatar {
+      width: 28px; height: 28px; border-radius: 50%; background: #dfe6e9; color: var(--navy);
+      font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    }
+    .rc-right { display: flex; align-items: center; gap: 12px; font-size: 0.82rem; }
+    .status-tag {
+      padding: 3px 9px; border-radius: 12px; font-weight: 700; font-size: 0.75rem;
+    }
+    .st-yes { background: #eafaf1; color: var(--green-dark); }
+    .st-no { background: #fdedec; color: var(--red-dark); }
+    .st-abs { background: #fef9e7; color: #b7950b; }
+    .st-pass { background: #eef1f5; color: var(--muted); }
+    .st-barred { background: #fadbd8; color: #922b21; }
+
+    /* Forms & Tables */
+    .form-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; align-items: flex-end; }
+    .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }
+    label { font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+    input[type="text"], input[type="number"], select {
+      padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.88rem; background: var(--white); color: var(--text);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { background: #f8fafc; color: var(--muted); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .table-wrap { overflow-x: auto; }
+
+    /* Bottom Navigation Dock */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+      background: var(--white); border-top: 1px solid var(--border);
+      display: flex; justify-content: center; gap: 36px; align-items: center;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.05); z-index: 100;
+    }
+    .bnav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      cursor: pointer; color: var(--muted); font-size: 0.75rem; font-weight: 600;
+      border: none; background: none; padding: 4px 12px;
+    }
+    .bnav-item.active { color: var(--navy); }
+    .bnav-icon { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="emblem">IMF</div>
+      <span>Surabaya MUN 2026 — International Monetary Fund Executive Board</span>
+    </div>
+    <div style="font-size:0.82rem; opacity:0.9;">1 SDR = US$1.36666 (Table 4)</div>
+  </div>
+
+  <!-- Sub-header Status Bar -->
+  <div class="subbar">
+    <div style="font-weight:600; color:var(--navy);" id="subbarTitle">Voting &amp; Roll Call Console</div>
+    <div class="status-pills" id="topQuorumPills"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- ==================== VIEW 1: ROLL CALL / ATTENDANCE ==================== -->
+    <div id="view-rollcall" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+          <div class="card-title" style="margin:0;">Session Roll Call &amp; Quorum Verification (Rule 4)</div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-pill btn-navy" onclick="setAttendance('all23')">Present: All 23 Seats</button>
+            <button class="btn-pill btn-light" onclick="setAttendance('first15')">Present: First 15 Seated</button>
+            <button class="btn-pill btn-light" onclick="setAttendance('none')">Clear Attendance</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Seat</th>
+                <th>Status</th>
+                <th>Executive Director</th>
+                <th class="num">Quota (SDR m)</th>
+                <th class="num">Voting Share (%)</th>
+                <th class="num">Units (1,000 Scale)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 2: VOTING (MUN COMMAND LAYOUT) ==================== -->
+    <div id="view-voting" class="view active">
+      <div class="card" style="padding:14px 18px;">
+        <div class="form-row" style="margin-bottom:0;">
+          <div class="field" style="flex:2;">
+            <label>Motion / Vote Threshold (Rules 22, 23, 24)</label>
+            <select id="voteMode" onchange="onVoteConfigChange()">
+              <option value="proc_simple">Procedural — Simple Majority (&gt;50% present, 1 seat = 1 vote, no abstentions)</option>
+              <option value="proc_two_thirds">Procedural — Two-Thirds Majority (&ge;2/3 present: Divide Question / Unfriendly Amend.)</option>
+              <option value="res_substantive">Resolution — Substantive (1 seat = 1 vote, Yes &gt; No, abstentions allowed)</option>
+              <option value="prog_normal" selected>Programme Proposal — Normal Access (Shares-based: &gt;50% eligible voting power)</option>
+              <option value="prog_exceptional">Programme Proposal — Exceptional Access (Shares-based: &ge;70% eligible voting power, Rule 20.6)</option>
+              <option value="special_85">Special Majority Resolution — Quotas / SDR / Limits / Thresholds (Shares-based: &ge;85% cast)</option>
+            </select>
+          </div>
+          <div class="field" id="borrowerSelectWrap">
+            <label>Borrowing Seat (Barred under Rule 6.4)</label>
+            <select id="voteBorrower" onchange="onVoteConfigChange()"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="vote-grid">
+        <!-- Left Column: Dashboard -->
+        <div class="card">
+          <div class="card-title">Dashboard</div>
+          <div class="dash-actions">
+            <button class="btn-pill btn-orange" onclick="resetVotes()">Reset Votes</button>
+            <button class="btn-pill btn-navy" onclick="allPresentYes()">All In Favor</button>
+          </div>
+
+          <div class="tally-row" id="tallyRow"></div>
+
+          <div class="progress-bar">
+            <div class="seg-yes" id="barYes" style="width:0%"></div>
+            <div class="seg-abs" id="barAbs" style="width:0%"></div>
+            <div class="seg-no" id="barNo" style="width:0%"></div>
+          </div>
+
+          <div class="result-box" id="voteOutcomeBox">Awaiting votes...</div>
+
+          <div class="card-title" style="font-size:0.88rem; margin-bottom:6px;">Navigate</div>
+          <div class="nav-list">
+            <div class="nav-item active" id="navRound1" onclick="setRoundFilter('ALL')">
+              <span>1st Round (All Present Seats)</span><span>&rsaquo;</span>
+            </div>
+            <div class="nav-item" id="navRound2" onclick="setRoundFilter('PASSED')">
+              <span>2nd Round (Passed / Unvoted)</span><span>&rsaquo;</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Active Speaker + Roll Call List -->
+        <div class="card">
+          <div class="card-title" id="roundHeading">Round 1</div>
+
+          <!-- Spotlight Active Executive Director -->
+          <div class="spotlight" id="spotlightBox"></div>
+
+          <!-- Clickable List -->
+          <div class="rc-list" id="rollCallList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 3: PROGRAMME CALCULATOR ==================== -->
+    <div id="view-calculator" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+          <div class="card-title" style="margin:0;">Programme Proposal Validator &amp; Repayment Generator (Rule 20)</div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-pill btn-light" onclick="loadWorkedExample()">Load Worked Example (Egypt EFF)</button>
+            <button class="btn-pill btn-navy" onclick="adoptProposal()">Adopt Proposal (Deduct Envelope)</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label>Borrowing Executive Director</label>
+            <select id="calcBorrower" onchange="recalcProgramme()"></select>
+          </div>
+          <div class="field">
+            <label>Lending Facility (Table 3)</label>
+            <select id="calcFacility" onchange="onFacilityChange()">
+              <option value="EFF" selected>EFF — Extended Fund Facility (GRA, 4 grace + 6 equal yrs, 200%/600%)</option>
+              <option value="SBA">SBA — Stand-By Arrangement (GRA, 3 grace + 2 equal yrs, 200%/600%)</option>
+              <option value="RFI">RFI — Rapid Financing Instrument (GRA, One-off, 3 grace + 2 equal yrs, 50%/100%)</option>
+              <option value="ECF">ECF — Extended Credit Facility (PRGT, 0% interest, 5 grace + 5 equal yrs, 200%/600%)</option>
+              <option value="RCF">RCF — Rapid Credit Facility (PRGT, 0% interest, One-off, 5 grace + 5 equal yrs, 50%/100%)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Total BoP Financing Gap (US$ m)</label>
+            <input type="number" id="calcGap" value="9000" step="10" oninput="recalcProgramme()" />
+          </div>
+          <div class="field">
+            <label>Other Multilateral (US$ m)</label>
+            <input type="number" id="calcMulti" value="1000" step="10" oninput="recalcProgramme()" />
+          </div>
+          <div class="field">
+            <label>SDR Interest Rate (%)</label>
+            <input type="number" id="calcSdr" value="3.00" step="0.05" oninput="recalcProgramme()" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label>Year 1 IMF Drawing (US$ m)</label>
+            <input type="number" id="t1" value="1800" step="10" oninput="recalcProgramme()" />
+          </div>
+          <div class="field" id="t2Box">
+            <label>Year 2 IMF Drawing (US$ m)</label>
+            <input type="number" id="t2" value="1500" step="10" oninput="recalcProgramme()" />
+          </div>
+          <div class="field" id="t3Box">
+            <label>Year 3 IMF Drawing (US$ m)</label>
+            <input type="number" id="t3" value="1500" step="10" oninput="recalcProgramme()" />
+          </div>
+          <div class="field" id="t4Box">
+            <label>Year 4 IMF Drawing (US$ m)</label>
+            <input type="number" id="t4" value="1200" step="10" oninput="recalcProgramme()" />
+          </div>
+        </div>
+
+        <div style="margin-top:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label>Bilateral Borrowing Pledges (Rule 20.5 — Max 25% of Lender Quota; Borrower cannot lend to self)</label>
+            <button class="btn-pill btn-light" onclick="addBilateral()">+ Add Bilateral Lender</button>
+          </div>
+          <div id="bilateralRows"></div>
+        </div>
+
+        <div id="calcStatusBanner" class="result-box" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Financing Table (Rule 20.2c)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Source of Borrowing</th>
+                <th>Type</th>
+                <th class="num">Amount (US$ m)</th>
+                <th class="num">% of Total</th>
+              </tr>
+            </thead>
+            <tbody id="finTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Borrowing Projection &amp; Repayment Schedule (Rule 20.2f &amp; 20.3)</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th class="num">Disbursed (US$ m)</th>
+                <th class="num">Principal Repaid (US$ m)</th>
+                <th class="num">Credit Outstanding (US$ m)</th>
+                <th class="num">Outstanding (% Quota)</th>
+                <th class="num">Charges &amp; Fees (US$ m)</th>
+                <th class="num">Total Debt Service (US$ m)</th>
+                <th class="num">Cumulative Service (US$ m)</th>
+              </tr>
+            </thead>
+            <tbody id="repTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VIEW 4: DAIS TRACKER ==================== -->
+    <div id="view-tracker" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+          <div class="card-title" style="margin:0;">Dais Tracker — Quotas, Borrowing Room &amp; Bilateral Support Capacity (Table 4)</div>
+          <button class="btn-pill btn-orange" onclick="resetTracker()">Reset All Balances &amp; Ledger</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Executive Director</th>
+                <th class="num">Quota (SDR m)</th>
+                <th class="num">Quota (US$ m)</th>
+                <th class="num">Voting %</th>
+                <th class="num">200% Annual</th>
+                <th class="num">600% Cum.</th>
+                <th class="num">Drawn (US$ m)</th>
+                <th class="num">Rem. 600% Room</th>
+                <th class="num">Rem. BSC (25%)</th>
+                <th>PRGT</th>
+              </tr>
+            </thead>
+            <tbody id="trackerBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Adopted Programme Ledger</div>
+        <div id="ledgerList" style="font-size:0.86rem; color:var(--muted);">No programmes adopted yet.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom MUN Command Dock -->
+  <nav class="bottom-nav">
+    <button class="bnav-item" id="bnav-rollcall" onclick="switchView('rollcall')">
+      <svg class="bnav-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span>Roll Call</span>
+    </button>
+    <button class="bnav-item active" id="bnav-voting" onclick="switchView('voting')">
+      <svg class="bnav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 12h10M7 8h6M7 16h4"/></svg>
+      <span>Voting</span>
+    </button>
+    <button class="bnav-item" id="bnav-calculator" onclick="switchView('calculator')">
+      <svg class="bnav-icon" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="16" y2="11"/><line x1="8" y1="16" x2="10" y2="16"/><line x1="14" y1="16" x2="16" y2="16"/></svg>
+      <span>Calculator</span>
+    </button>
+    <button class="bnav-item" id="bnav-tracker" onclick="switchView('tracker')">
+      <svg class="bnav-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <span>Dais Tracker</span>
+    </button>
+  </nav>
+
+<script>
+const OPENING_ENVELOPE = 53268.9; // Rule 20.5 (US$m)
+
+const SEATS = [
+  { id: 1,  name: "Shannon Suang Ding",                  quotaSdr: 82994.20, pct: 15.00, quotaUsd: 113424.90, lim200: 226849.80, lim600: 680549.40, bsc: 28356.20, prgt: "No" },
+  { id: 2,  name: "Zhengxin Zhang",                      quotaSdr: 30482.90, pct: 10.00, quotaUsd:  41659.80, lim200:  83319.60, lim600: 249958.70, bsc: 10414.90, prgt: "No" },
+  { id: 3,  name: "Robert Christopher Plachta",          quotaSdr: 26634.40, pct:  6.41, quotaUsd:  36400.20, lim200:  72800.40, lim600: 218401.10, bsc:  9100.00, prgt: "No" },
+  { id: 4,  name: "Idwan Suhardi Bin Hakim",             quotaSdr: 19950.00, pct:  5.00, quotaUsd:  27264.90, lim200:  54529.80, lim600: 163589.30, bsc:  6816.20, prgt: "Partial" },
+  { id: 5,  name: "Riccardo Ercoli Michael",             quotaSdr: 19915.80, pct:  4.20, quotaUsd:  27218.10, lim200:  54436.30, lim600: 163308.80, bsc:  6804.50, prgt: "No" },
+  { id: 6,  name: "Veda Poon",                           quotaSdr: 20155.10, pct:  4.10, quotaUsd:  27545.20, lim200:  55090.40, lim600: 165271.10, bsc:  6886.30, prgt: "No" },
+  { id: 7,  name: "Jiyoung Choi",                        quotaSdr:  8277.20, pct:  3.08, quotaUsd:  11312.10, lim200:  22624.20, lim600:  67872.70, bsc:  2828.00, prgt: "Partial" },
+  { id: 8,  name: "Jun Mizuguchi",                       quotaSdr: 30820.50, pct:  6.26, quotaUsd:  42121.20, lim200:  84242.30, lim600: 252727.00, bsc: 10530.30, prgt: "No" },
+  { id: 9,  name: "Jeroen Eddy Ellen Clicq",             quotaSdr: 25108.30, pct:  5.51, quotaUsd:  34314.50, lim200:  68629.00, lim600: 205887.10, bsc:  8578.60, prgt: "Partial" },
+  { id: 10, name: "Arnaud Fernand Buissé",               quotaSdr: 20155.10, pct:  5.10, quotaUsd:  27545.20, lim200:  55090.40, lim600: 165271.10, bsc:  6886.30, prgt: "No" },
+  { id: 11, name: "Rasmus Ammitzboeld Degn",             quotaSdr: 15374.00, pct:  3.34, quotaUsd:  21011.00, lim200:  42022.10, lim600: 126066.20, bsc:  5252.80, prgt: "No" },
+  { id: 12, name: "Leonardo Madcur",                     quotaSdr:  7136.70, pct:  1.62, quotaUsd:   9753.40, lim200:  19506.90, lim600:  58520.70, bsc:  2438.40, prgt: "No" },
+  { id: 13, name: "Patryk Loszewski",                    quotaSdr: 12054.40, pct:  3.67, quotaUsd:  16474.30, lim200:  32948.50, lim600:  98845.60, bsc:  4118.60, prgt: "Partial" },
+  { id: 14, name: "Mohamed Ahmed A. Alrashed",           quotaSdr:  9992.60, pct:  3.05, quotaUsd:  13656.50, lim200:  27313.00, lim600:  81939.00, bsc:  3414.10, prgt: "No" },
+  { id: 15, name: "Xiana Margarida Méndez Bértolo",      quotaSdr: 21827.70, pct:  4.61, quotaUsd:  29831.10, lim200:  59662.10, lim600: 178986.30, bsc:  7457.80, prgt: "Partial" },
+  { id: 16, name: "Ksenia Yudaeva",                      quotaSdr: 15062.40, pct:  3.28, quotaUsd:  20585.20, lim200:  41170.40, lim600: 123511.10, bsc:  5146.30, prgt: "No" },
+  { id: 17, name: "Afonso S. Bevilaqua / André Roncaglia", quotaSdr: 13847.50, pct: 3.12, quotaUsd: 18924.80, lim200: 37849.70, lim600: 113549.00, bsc:  4731.20, prgt: "Partial" },
+  { id: 18, name: "Urjit R. Patel",                      quotaSdr: 14780.20, pct:  3.10, quotaUsd:  20199.50, lim200:  40399.00, lim600: 121197.10, bsc:  5049.90, prgt: "Partial" },
+  { id: 19, name: "Régis Olivier N'Sonde",               quotaSdr:  3728.90, pct:  1.39, quotaUsd:   5096.10, lim200:  10192.30, lim600:  30576.80, bsc:  1274.00, prgt: "Partial" },
+  { id: 20, name: "Ouattara Wautabouna",                 quotaSdr: 12009.80, pct:  2.06, quotaUsd:  16413.30, lim200:  32826.60, lim600:  98479.90, bsc:  4103.30, prgt: "Partial" },
+  { id: 21, name: "Adriano Ubisse",                      quotaSdr: 10000.00, pct:  2.00, quotaUsd:  13666.60, lim200:  27333.20, lim600:  81999.60, bsc:  3416.70, prgt: "n/a" },
+  { id: 22, name: "Bahador Bijani",                      quotaSdr: 11602.40, pct:  1.58, quotaUsd:  15856.50, lim200:  31713.10, lim600:  95139.30, bsc:  3964.10, prgt: "Partial" },
+  { id: 23, name: "Mohamed Ahmed Mohamed Maait",         quotaSdr: 11268.30, pct:  2.53, quotaUsd:  15399.90, lim200:  30799.90, lim600:  92399.60, bsc:  3850.00, prgt: "Partial" }
+];
+
+const app = {
+  members: SEATS.map(s => ({
+    ...s,
+    present: true,
+    vote: "NONE", // YES | NO | ABSTAIN | PASS | NONE
+    creditDrawn: 0,
+    bscUsed: 0
+  })),
+  activeSeatId: 1,
+  roundFilter: "ALL", // ALL | PASSED
+  envelope: OPENING_ENVELOPE,
+  ledger: [],
+  pledges: [
+    { lenderId: 14, amount: 1500, instrument: "Bilateral: central-bank deposit rollover" },
+    { lenderId: 8,  amount: 500,  instrument: "Bilateral: budget-support loan" }
+  ]
+};
+
+const fmt = (n, d = 1) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+function switchView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  document.querySelectorAll(".bnav-item").forEach(b => b.classList.remove("active"));
+  document.getElementById("bnav-" + name).classList.add("active");
+  const titles = {
+    rollcall: "Session Roll Call & Attendance (Rule 4)",
+    voting: "Voting & Roll Call Console (Rules 22–24)",
+    calculator: "Programme Proposal Validator & Repayment Schedule (Rule 20)",
+    tracker: "Dais Tracker — Quotas, Borrowing Room & BSC (Table 4)"
+  };
+  document.getElementById("subbarTitle").textContent = titles[name];
+}
+
+function renderTopPills() {
+  const present = app.members.filter(m => m.present);
+  const units = present.reduce((s, m) => s + m.pct * 10, 0);
+  const sessOk = present.length >= 8 && units >= 500;
+  const subOk = present.length >= 10;
+
+  document.getElementById("topQuorumPills").innerHTML = `
+    <span class="pill"><span class="dot navy"></span> Present: ${present.length}/${app.members.length} (${units.toFixed(1)} units)</span>
+    <span class="pill"><span class="dot ${sessOk ? 'green' : 'red'}"></span> Session Quorum: ${sessOk ? 'Met' : 'Not Met'}</span>
+    <span class="pill"><span class="dot ${subOk ? 'green' : 'red'}"></span> Substantive Quorum: ${subOk ? 'Met' : 'Not Met'}</span>
+    <span class="pill"><span class="dot amber"></span> Envelope: US$${fmt(app.envelope)}m</span>
+  `;
+}
+
+/* ==================== ROLL CALL / ATTENDANCE ==================== */
+function togglePresent(id) {
+  const m = app.members.find(x => x.id === id);
+  m.present = !m.present;
+  if (!m.present) m.vote = "NONE";
+  renderAll();
+}
+
+function setAttendance(mode) {
+  app.members.forEach((m, i) => {
+    m.present = mode === "all23" ? true : (mode === "first15" ? i < 15 : false);
+    if (!m.present) m.vote = "NONE";
+  });
+  renderAll();
+}
+
+function renderAttendance() {
+  document.getElementById("attendanceBody").innerHTML = app.members.map(m => `
+    <tr>
+      <td>${m.id}</td>
+      <td><span class="status-tag ${m.present ? 'st-yes' : 'st-no'}">${m.present ? 'Present' : 'Absent'}</span></td>
+      <td><strong>${m.name}</strong></td>
+      <td class="num">${fmt(m.quotaSdr, 2)}</td>
+      <td class="num">${m.pct.toFixed(2)}%</td>
+      <td class="num">${(m.pct * 10).toFixed(1)}</td>
+      <td>
+        <button class="btn-pill ${m.present ? 'btn-light' : 'btn-navy'}" style="padding:5px 10px; font-size:0.78rem;" onclick="togglePresent(${m.id})">
+          ${m.present ? 'Mark Absent' : 'Mark Present'}
+        </button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+/* ==================== MUN COMMAND VOTING ENGINE ==================== */
+function initDropdowns() {
+  const opts = app.members.map(m => `<option value="${m.id}">#${m.id} ${m.name} (${m.pct.toFixed(2)}%)</option>`).join("");
+  document.getElementById("voteBorrower").innerHTML = `<option value="0">None (No seat barred)</option>` + opts;
+  document.getElementById("voteBorrower").value = "23";
+  document.getElementById("calcBorrower").innerHTML = opts;
+  document.getElementById("calcBorrower").value = "23";
+}
+
+function getBarredId() {
+  const mode = document.getElementById("voteMode").value;
+  return (mode === "prog_normal" || mode === "prog_exceptional")
+    ? Number(document.getElementById("voteBorrower").value) : 0;
+}
+
+function onVoteConfigChange() {
+  const mode = document.getElementById("voteMode").value;
+  const isProg = mode.startsWith("prog_");
+  document.getElementById("borrowerSelectWrap").style.display = isProg ? "flex" : "none";
+  const barredId = getBarredId();
+  const noAbs = mode.startsWith("proc_");
+
+  app.members.forEach(m => {
+    if (m.id === barredId) m.vote = "NONE";
+    if (noAbs && m.vote === "ABSTAIN") m.vote = "NONE";
+  });
+  ensureValidActiveSeat();
+  renderVoting();
+}
+
+function setRoundFilter(filter) {
+  app.roundFilter = filter;
+  document.getElementById("navRound1").classList.toggle("active", filter === "ALL");
+  document.getElementById("navRound2").classList.toggle("active", filter === "PASSED");
+  document.getElementById("roundHeading").textContent = filter === "ALL" ? "Round 1" : "Round 2 (Passed / Remaining)";
+  ensureValidActiveSeat();
+  renderVoting();
+}
+
+function getVisibleVoters() {
+  const barredId = getBarredId();
+  return app.members.filter(m => {
+    if (!m.present) return false;
+    if (app.roundFilter === "PASSED") {
+      return m.id !== barredId && (m.vote === "PASS" || m.vote === "NONE");
+    }
+    return true;
+  });
+}
+
+function ensureValidActiveSeat() {
+  const barredId = getBarredId();
+  const eligible = getVisibleVoters().filter(m => m.id !== barredId);
+  if (!eligible.some(m => m.id === app.activeSeatId)) {
+    app.activeSeatId = eligible.length ? eligible[0].id : 0;
+  }
+}
+
+function selectSeat(id) {
+  if (id === getBarredId()) return;
+  app.activeSeatId = id;
+  renderVoting();
+}
+
+function castVoteForActive(voteVal) {
+  const barredId = getBarredId();
+  const m = app.members.find(x => x.id === app.activeSeatId);
+  if (!m || !m.present || m.id === barredId) return;
+  m.vote = voteVal;
+
+  const list = getVisibleVoters().filter(x => x.id !== barredId);
+  const idx = list.findIndex(x => x.id === m.id);
+  if (idx >= 0 && idx + 1 < list.length) {
+    app.activeSeatId = list[idx + 1].id;
+  }
+  renderVoting();
+}
+
+function resetVotes() {
+  app.members.forEach(m => m.vote = "NONE");
+  app.roundFilter = "ALL";
+  document.getElementById("navRound1").classList.add("active");
+  document.getElementById("navRound2").classList.remove("active");
+  document.getElementById("roundHeading").textContent = "Round 1";
+  ensureValidActiveSeat();
+  renderVoting();
+}
+
+function allPresentYes() {
+  const barredId = getBarredId();
+  app.members.forEach(m => {
+    if (m.present && m.id !== barredId) m.vote = "YES";
+  });
+  renderVoting();
+}
+
+function renderVoting() {
+  const mode = document.getElementById("voteMode").value;
+  const isShares = mode.startsWith("prog_") || mode === "special_85";
+  const noAbs = mode.startsWith("proc_");
+  const barredId = getBarredId();
+  ensureValidActiveSeat();
+
+  const active = app.members.find(m => m.id === app.activeSeatId);
+  const spotBox = document.getElementById("spotlightBox");
+  if (!active) {
+    spotBox.innerHTML = `<div style="grid-column:1/-1; color:var(--muted); padding:12px;">No eligible seats in current view.</div>`;
+  } else {
+    spotBox.innerHTML = `
+      <div class="seat-badge-box">
+        <div class="seat-circle">SEAT #${active.id}<span>${active.pct.toFixed(2)}%</span></div>
+        <div class="seat-name">${active.name}</div>
+        <div class="seat-meta">${(active.pct * 10).toFixed(1)} units / ${fmt(active.quotaSdr, 1)} SDR m</div>
+      </div>
+      <div class="action-col">
+        <button class="vote-big vb-yes" onclick="castVoteForActive('YES')">In Favor</button>
+        <button class="vote-big vb-abs" ${noAbs ? 'disabled' : ''} onclick="castVoteForActive('ABSTAIN')">Abstaining</button>
+      </div>
+      <div class="action-col">
+        <button class="vote-big vb-no" onclick="castVoteForActive('NO')">Against</button>
+        <button class="vote-big vb-pass" onclick="castVoteForActive('PASS')">Pass</button>
+      </div>
+    `;
+  }
+
+  const visible = getVisibleVoters();
+  document.getElementById("rollCallList").innerHTML = visible.map(m => {
+    const isBarred = m.id === barredId;
+    const isSel = m.id === app.activeSeatId && !isBarred;
+    let tagHtml = `<span style="color:var(--muted);">&rsaquo;</span>`;
+    if (isBarred) tagHtml = `<span class="status-tag st-barred">Barred (Rule 6.4)</span>`;
+    else if (m.vote === "YES") tagHtml = `<span class="status-tag st-yes">In Favor</span>`;
+    else if (m.vote === "NO") tagHtml = `<span class="status-tag st-no">Against</span>`;
+    else if (m.vote === "ABSTAIN") tagHtml = `<span class="status-tag st-abs">Abstaining</span>`;
+    else if (m.vote === "PASS") tagHtml = `<span class="status-tag st-pass">Passed</span>`;
+
+    return `
+      <div class="rc-row ${isSel ? 'selected' : ''} ${isBarred ? 'barred' : ''}" onclick="selectSeat(${m.id})">
+        <div class="rc-left">
+          <div class="mini-avatar">${m.id}</div>
+          <div>
+            <div style="font-weight:600; font-size:0.9rem;">${m.name}</div>
+            <div style="font-size:0.75rem; color:var(--muted);">Quota: ${fmt(m.quotaSdr, 1)} SDR m</div>
+          </div>
+        </div>
+        <div class="rc-right">
+          <span style="font-weight:600; color:var(--navy);">${m.pct.toFixed(2)}% (${(m.pct * 10).toFixed(1)} u)</span>
+          ${tagHtml}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  let yesSeats = 0, noSeats = 0, absSeats = 0, presentSeats = 0;
+  let yesUnits = 0, noUnits = 0, absUnits = 0, eligibleUnits = 0;
+
+  app.members.forEach(m => {
+    if (!m.present) return;
+    presentSeats++;
+    if (m.id === barredId) return;
+    const u = m.pct * 10;
+    eligibleUnits += u;
+    if (m.vote === "YES") { yesSeats++; yesUnits += u; }
+    else if (m.vote === "NO") { noSeats++; noUnits += u; }
+    else if (m.vote === "ABSTAIN") { absSeats++; absUnits += u; }
+  });
+
+  const outcomeBox = document.getElementById("voteOutcomeBox");
+
+  if (!isShares) {
+    let needed = 0, labelNeeded = "";
+    let passed = false;
+    if (mode === "proc_simple") {
+      needed = Math.floor(presentSeats / 2) + 1;
+      labelNeeded = needed;
+      passed = yesSeats >= needed && presentSeats > 0;
+    } else if (mode === "proc_two_thirds") {
+      needed = Math.ceil((2 * presentSeats) / 3);
+      labelNeeded = needed;
+      passed = yesSeats >= needed && presentSeats > 0;
+    } else {
+      labelNeeded = "Yes > No";
+      passed = yesSeats > noSeats;
+    }
+
+    document.getElementById("tallyRow").innerHTML = `
+      <div><div class="tally-num">${yesSeats}</div><div class="tally-lbl">In Favor</div></div>
+      <div><div class="tally-num">${noSeats}</div><div class="tally-lbl">Against</div></div>
+      <div><div class="tally-num">${absSeats}</div><div class="tally-lbl">Abstaining</div></div>
+      <div><div class="tally-num">${labelNeeded}</div><div class="tally-lbl">Majority</div></div>
+    `;
+
+    const base = Math.max(1, presentSeats);
+    document.getElementById("barYes").style.width = `${(yesSeats / base) * 100}%`;
+    document.getElementById("barAbs").style.width = `${(absSeats / base) * 100}%`;
+    document.getElementById("barNo").style.width  = `${(noSeats / base) * 100}%`;
+
+    if (yesSeats === 0 && noSeats === 0) {
+      outcomeBox.className = "result-box";
+      outcomeBox.textContent = "Awaiting votes (1 seat = 1 vote).";
+    } else {
+      outcomeBox.className = "result-box " + (passed ? "pass" : "fail");
+      outcomeBox.textContent = passed ? "MOTION / RESOLUTION ADOPTED" : "MOTION / RESOLUTION FAILED";
+    }
+  } else {
+    const activeDenom = eligibleUnits - absUnits;
+    const yesPct = activeDenom > 0 ? (yesUnits / activeDenom) * 100 : 0;
+
+    let reqText = "", passed = false;
+    if (mode === "prog_normal") {
+      reqText = ">50.0%";
+      passed = activeDenom > 0 && yesUnits > activeDenom * 0.50;
+    } else if (mode === "prog_exceptional") {
+      reqText = "≥70.0%";
+      passed = activeDenom > 0 && yesPct >= 70.0;
+    } else {
+      reqText = "≥85.0%";
+      passed = activeDenom > 0 && yesPct >= 85.0;
+    }
+
+    document.getElementById("tallyRow").innerHTML = `
+      <div><div class="tally-num">${yesUnits.toFixed(1)}</div><div class="tally-lbl">Favor (u)</div></div>
+      <div><div class="tally-num">${noUnits.toFixed(1)}</div><div class="tally-lbl">Against (u)</div></div>
+      <div><div class="tally-num">${absUnits.toFixed(1)}</div><div class="tally-lbl">Abstain (u)</div></div>
+      <div><div class="tally-num">${reqText}</div><div class="tally-lbl">Threshold</div></div>
+    `;
+
+    const barBase = Math.max(1, eligibleUnits);
+    document.getElementById("barYes").style.width = `${(yesUnits / barBase) * 100}%`;
+    document.getElementById("barAbs").style.width = `${(absUnits / barBase) * 100}%`;
+    document.getElementById("barNo").style.width  = `${(noUnits / barBase) * 100}%`;
+
+    const detail = `In Favor: ${yesUnits.toFixed(2)} units (${yesPct.toFixed(2)}% of ${activeDenom.toFixed(2)} active cast units)`;
+    if (yesUnits === 0 && noUnits === 0) {
+      outcomeBox.className = "result-box";
+      outcomeBox.textContent = `Active Eligible Pool: ${eligibleUnits.toFixed(2)} units (Borrower barred under Rule 6.4).`;
+    } else {
+      outcomeBox.className = "result-box " + (passed ? "pass" : "fail");
+      outcomeBox.textContent = (passed ? "PROPOSAL ADOPTED — " : "PROPOSAL FAILED — ") + detail;
+    }
+  }
+}
+
+/* ==================== PROGRAMME CALCULATOR ==================== */
+function onFacilityChange() {
+  const fac = document.getElementById("calcFacility").value;
+  const oneOff = fac === "RFI" || fac === "RCF";
+  ["t2Box", "t3Box", "t4Box"].forEach(id => {
+    document.getElementById(id).style.display = oneOff ? "none" : "flex";
+  });
+  if (oneOff) {
+    document.getElementById("t2").value = 0;
+    document.getElementById("t3").value = 0;
+    document.getElementById("t4").value = 0;
+  }
+  recalcProgramme();
+}
+
+function addBilateral() {
+  app.pledges.push({ lenderId: 1, amount: 0, instrument: "Bilateral loan / swap line" });
+  renderPledges();
+  recalcProgramme();
+}
+
+function removePledge(i) {
+  app.pledges.splice(i, 1);
+  renderPledges();
+  recalcProgramme();
+}
+
+function renderPledges() {
+  const box = document.getElementById("bilateralRows");
+  if (!app.pledges.length) {
+    box.innerHTML = `<div style="font-size:0.82rem; color:var(--muted);">No bilateral pledges added.</div>`;
+    return;
+  }
+  box.innerHTML = app.pledges.map((p, i) => {
+    const opts = app.members.map(m => {
+      const rem = Math.max(0, m.bsc - m.bscUsed);
+      return `<option value="${m.id}" ${m.id === p.lenderId ? 'selected' : ''}>#${m.id} ${m.name} (Rem BSC: US$${fmt(rem)}m)</option>`;
+    }).join("");
+    return `
+      <div class="form-row" style="margin-bottom:8px;">
+        <div class="field" style="flex:2;">
+          <select onchange="app.pledges[${i}].lenderId=Number(this.value); recalcProgramme();">${opts}</select>
+        </div>
+        <div class="field" style="flex:2;">
+          <input type="text" value="${p.instrument}" oninput="app.pledges[${i}].instrument=this.value; recalcProgramme();" />
+        </div>
+        <div class="field">
+          <input type="number" value="${p.amount}" step="10" oninput="app.pledges[${i}].amount=Number(this.value)||0; recalcProgramme();" />
+        </div>
+        <button class="btn-pill btn-light" onclick="removePledge(${i})">Remove</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function loadWorkedExample() {
+  document.getElementById("calcBorrower").value = "23";
+  document.getElementById("calcFacility").value = "EFF";
+  document.getElementById("calcGap").value = 9000;
+  document.getElementById("calcMulti").value = 1000;
+  document.getElementById("calcSdr").value = 3.00;
+  document.getElementById("t1").value = 1800;
+  document.getElementById("t2").value = 1500;
+  document.getElementById("t3").value = 1500;
+  document.getElementById("t4").value = 1200;
+  app.pledges = [
+    { lenderId: 14, amount: 1500, instrument: "Bilateral: central-bank deposit rollover" },
+    { lenderId: 8,  amount: 500,  instrument: "Bilateral: budget-support loan" }
+  ];
+  onFacilityChange();
+  renderPledges();
+  recalcProgramme();
+}
+
+function recalcProgramme() {
+  const bId = Number(document.getElementById("calcBorrower").value);
+  const borrower = app.members.find(m => m.id === bId);
+  const fac = document.getElementById("calcFacility").value;
+  const gap = Number(document.getElementById("calcGap").value) || 0;
+  const multi = Number(document.getElementById("calcMulti").value) || 0;
+  const sdrRate = (Number(document.getElementById("calcSdr").value) || 0) / 100;
+
+  const isOneOff = fac === "RFI" || fac === "RCF";
+  const isPrgt = fac === "ECF" || fac === "RCF";
+  const t = [
+    Number(document.getElementById("t1").value) || 0,
+    isOneOff ? 0 : (Number(document.getElementById("t2").value) || 0),
+    isOneOff ? 0 : (Number(document.getElementById("t3").value) || 0),
+    isOneOff ? 0 : (Number(document.getElementById("t4").value) || 0)
+  ];
+
+  const fundTotal = t.reduce((a, b) => a + b, 0);
+  const biTotal = app.pledges.reduce((a, p) => a + (Number(p.amount) || 0), 0);
+  const totalFin = fundTotal + biTotal + multi;
+
+  const quotaUsd = borrower.quotaUsd;
+  const normAnn = isOneOff ? 50 : 200;
+  const normCum = isOneOff ? 100 : 600;
+  const peakAnnPct = (Math.max(...t) / quotaUsd) * 100;
+  const cumPct = ((borrower.creditDrawn + fundTotal) / quotaUsd) * 100;
+  const isExceptional = peakAnnPct > normAnn || cumPct > normCum;
+  const over1000 = cumPct > 1000;
+
+  const errors = [];
+  if (Math.abs(totalFin - gap) > 0.05) errors.push(`Total Financing (US$${fmt(totalFin)}m) must equal Gap (US$${fmt(gap)}m).`);
+  if (fundTotal > app.envelope) errors.push(`Fund borrowing exceeds remaining Envelope (US$${fmt(app.envelope)}m).`);
+  if (isPrgt && borrower.prgt === "No") errors.push(`${borrower.name} has 0 PRGT-eligible members (Table 4).`);
+  if (over1000) errors.push(`Cumulative access (${cumPct.toFixed(1)}%) exceeds 1,000% waiver cap.`);
+  app.pledges.forEach(p => {
+    const l = app.members.find(m => m.id === p.lenderId);
+    if (p.lenderId === bId && p.amount > 0) errors.push(`${l.name} cannot lend bilaterally to itself.`);
+    if (p.amount > (l.bsc - l.bscUsed) + 0.01) errors.push(`${l.name} exceeds remaining BSC (US$${fmt(l.bsc - l.bscUsed)}m).`);
+  });
+
+  const banner = document.getElementById("calcStatusBanner");
+  banner.className = "result-box " + (errors.length === 0 ? "pass" : "fail");
+  const tier = over1000 ? "EXCEEDS 1,000% (WAIVER REQ)" : (isExceptional ? "EXCEPTIONAL ACCESS (≥70% Vote)" : "NORMAL ACCESS (>50% Vote)");
+  banner.innerHTML = `
+    <div><strong>${errors.length === 0 ? "READY TO SUBMIT" : "RETURN TO SPONSORS"}</strong> &mdash; ${tier}</div>
+    <div style="font-weight:400; margin-top:4px;">
+      Peak Annual: <strong>${peakAnnPct.toFixed(1)}%</strong> (Normal ≤${normAnn}%) |
+      Cumulative: <strong>${cumPct.toFixed(1)}%</strong> (Normal ≤${normCum}%) |
+      Quota: <strong>US$${fmt(quotaUsd, 2)}m</strong>
+    </div>
+    ${errors.length ? `<ul style="margin:6px 0 0 18px; font-weight:400;">${errors.map(e => `<li>${e}</li>`).join("")}</ul>` : ""}
+  `;
+
+  // Financing Table
+  const rows = [
+    { src: `IMF — ${fac}`, type: isPrgt ? "Fund borrowing (PRGT)" : "Fund borrowing (GRA)", amt: fundTotal },
+    ...app.pledges.filter(p => p.amount > 0).map(p => ({
+      src: app.members.find(m => m.id === p.lenderId).name,
+      type: p.instrument || "Bilateral borrowing",
+      amt: p.amount
+    })),
+    ...(multi > 0 ? [{ src: "World Bank & regional banks", type: "Other multilateral borrowing", amt: multi }] : [])
+  ];
+  document.getElementById("finTableBody").innerHTML = rows.map(r => `
+    <tr>
+      <td>${r.src}</td>
+      <td>${r.type}</td>
+      <td class="num">${fmt(r.amt)}</td>
+      <td class="num">${gap > 0 ? ((r.amt / gap) * 100).toFixed(1) : "0.0"}%</td>
+    </tr>
+  `).join("") + `
+    <tr style="font-weight:700; background:#f8fafc;">
+      <td>TOTAL (= Financing Gap)</td><td></td>
+      <td class="num">${fmt(totalFin)}</td>
+      <td class="num">${gap > 0 ? ((totalFin / gap) * 100).toFixed(1) : "0.0"}%</td>
+    </tr>
+  `;
+
+  // Repayment Schedule (Table 3 & Rule 20.3)
+  let grace = 4, inst = 6, timeSurchYr = 5;
+  if (fac === "SBA" || fac === "RFI") { grace = 3; inst = 2; timeSurchYr = 4; }
+  if (fac === "ECF" || fac === "RCF") { grace = 5; inst = 5; timeSurchYr = 99; }
+
+  const maxYrs = 4 + grace + inst - 1;
+  const repSched = Array(maxYrs + 1).fill(0);
+  t.forEach((draw, idx) => {
+    if (draw <= 0) return;
+    const each = draw / inst;
+    for (let k = 0; k < inst; k++) {
+      const y = (idx + 1) + grace + k;
+      if (y <= maxYrs) repSched[y] += each;
+    }
+  });
+
+  let out = 0, cum = 0, totD = 0, totR = 0, totC = 0, html = "";
+  for (let y = 1; y <= maxYrs; y++) {
+    const disb = y <= 4 ? t[y - 1] : 0;
+    const rep = repSched[y];
+    out = Math.max(0, out + disb - rep);
+    if (y > 4 && disb === 0 && rep === 0 && out < 0.01) break;
+
+    let charges = 0;
+    if (!isPrgt) {
+      const above300 = Math.max(0, out - 3 * quotaUsd);
+      charges = out * (sdrRate + 0.006)
+        + disb * 0.005
+        + above300 * 0.02
+        + (y >= timeSurchYr ? above300 * 0.0075 : 0);
+    }
+    const totSvc = rep + charges;
+    cum += totSvc;
+    totD += disb; totR += rep; totC += charges;
+
+    html += `
+      <tr>
+        <td>Year ${y}</td>
+        <td class="num">${disb > 0 ? fmt(disb) : "–"}</td>
+        <td class="num">${rep > 0 ? fmt(rep) : "–"}</td>
+        <td class="num">${out > 0.05 ? fmt(out) : "–"}</td>
+        <td class="num">${((out / quotaUsd) * 100).toFixed(1)}%</td>
+        <td class="num">${charges > 0 ? fmt(charges) : "–"}</td>
+        <td class="num">${totSvc > 0 ? fmt(totSvc) : "–"}</td>
+        <td class="num">${fmt(cum)}</td>
+      </tr>
+    `;
+  }
+  html += `
+    <tr style="font-weight:700; background:#f8fafc;">
+      <td>TOTAL</td>
+      <td class="num">${fmt(totD)}</td>
+      <td class="num">${fmt(totR)}</td>
+      <td class="num">–</td><td class="num">–</td>
+      <td class="num">${fmt(totC)}</td>
+      <td class="num">${fmt(totR + totC)}</td>
+      <td class="num"></td>
+    </tr>
+  `;
+  document.getElementById("repTableBody").innerHTML = html;
+}
+
+function adoptProposal() {
+  const bId = Number(document.getElementById("calcBorrower").value);
+  const borrower = app.members.find(m => m.id === bId);
+  const fac = document.getElementById("calcFacility").value;
+  const isOneOff = fac === "RFI" || fac === "RCF";
+  const fundTotal = (Number(document.getElementById("t1").value) || 0)
+    + (isOneOff ? 0 : (Number(document.getElementById("t2").value) || 0))
+    + (isOneOff ? 0 : (Number(document.getElementById("t3").value) || 0))
+    + (isOneOff ? 0 : (Number(document.getElementById("t4").value) || 0));
+
+  if (fundTotal <= 0 || fundTotal > app.envelope) return alert("Invalid Fund borrowing amount or insufficient envelope.");
+
+  borrower.creditDrawn += fundTotal;
+  app.envelope -= fundTotal;
+  const biSummary = [];
+  app.pledges.forEach(p => {
+    if (p.amount > 0 && p.lenderId !== bId) {
+      const l = app.members.find(m => m.id === p.lenderId);
+      l.bscUsed += p.amount;
+      biSummary.push(`${l.name}: US$${fmt(p.amount)}m`);
+    }
+  });
+  app.ledger.push({ borrower: borrower.name, fac, fundTotal, bi: biSummary.join(", ") || "None" });
+  renderAll();
+  alert(`Adopted ${fac} for ${borrower.name}. US$${fmt(fundTotal)}m deducted from Fund Envelope.`);
+}
+
+/* ==================== DAIS TRACKER ==================== */
+function resetTracker() {
+  app.members.forEach(m => { m.creditDrawn = 0; m.bscUsed = 0; });
+  app.envelope = OPENING_ENVELOPE;
+  app.ledger = [];
+  renderAll();
+}
+
+function renderTracker() {
+  document.getElementById("trackerBody").innerHTML = app.members.map(m => `
+    <tr>
+      <td>${m.id}</td>
+      <td><strong>${m.name}</strong></td>
+      <td class="num">${fmt(m.quotaSdr, 2)}</td>
+      <td class="num">${fmt(m.quotaUsd, 2)}</td>
+      <td class="num">${m.pct.toFixed(2)}%</td>
+      <td class="num">${fmt(m.lim200, 2)}</td>
+      <td class="num">${fmt(m.lim600, 2)}</td>
+      <td class="num">${fmt(m.creditDrawn, 2)}</td>
+      <td class="num" style="color:var(--green-dark); font-weight:600;">${fmt(Math.max(0, m.lim600 - m.creditDrawn), 2)}</td>
+      <td class="num">${fmt(Math.max(0, m.bsc - m.bscUsed), 2)}</td>
+      <td>${m.prgt}</td>
+    </tr>
+  `).join("");
+
+  const lBox = document.getElementById("ledgerList");
+  lBox.innerHTML = app.ledger.length
+    ? `<ol style="padding-left:18px;">` + app.ledger.map(x => `<li><strong>${x.borrower}</strong> (${x.fac}): US$${fmt(x.fundTotal)}m Fund | Bilateral: ${x.bi}</li>`).join("") + `</ol>`
+    : "No programmes adopted yet.";
+}
+
+function renderAll() {
+  renderTopPills();
+  renderAttendance();
+  renderVoting();
+  renderPledges();
+  recalcProgramme();
+  renderTracker();
+}
+
+initDropdowns();
+renderAll();
+</script>
+</body>
+</html>
